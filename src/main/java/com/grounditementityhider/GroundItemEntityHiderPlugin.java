@@ -11,9 +11,6 @@ import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.ItemLayer;
-import net.runelite.api.Menu;
-import net.runelite.api.MenuAction;
-import net.runelite.api.MenuEntry;
 import net.runelite.api.Renderable;
 import net.runelite.api.Scene;
 import net.runelite.api.Tile;
@@ -21,7 +18,6 @@ import net.runelite.api.TileItem;
 import net.runelite.api.TileObject;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.ItemSpawned;
-import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.callback.RenderCallback;
 import net.runelite.client.callback.RenderCallbackManager;
@@ -129,41 +125,10 @@ public class GroundItemEntityHiderPlugin extends Plugin
 	public void onItemSpawned(ItemSpawned itemSpawned)
 	{
 		TileItem item = itemSpawned.getItem();
-		if (item == null || !shouldHideItem(item.getId()))
+		if (item != null)
 		{
-			return;
+			shouldHideItem(item.getId());
 		}
-
-		Tile tile = itemSpawned.getTile();
-		if (tile != null)
-		{
-			List<TileItem> groundItems = tile.getGroundItems();
-			if (groundItems != null)
-			{
-				groundItems.remove(item);
-			}
-		}
-	}
-
-	@Subscribe
-	public void onMenuEntryAdded(MenuEntryAdded menuEntryAdded)
-	{
-		if (client == null)
-		{
-			return;
-		}
-
-		MenuEntry menuEntry = menuEntryAdded.getMenuEntry();
-		if (menuEntry == null || !shouldHideItem(menuEntryAdded.getIdentifier()) || !isGroundItemOption(menuEntry.getType()))
-		{
-			return;
-		}
-
-		Menu menu = client.getMenu();
-
-		menu.setMenuEntries(Arrays.stream(menu.getMenuEntries())
-			.filter(entry -> entry != menuEntry)
-			.toArray(MenuEntry[]::new));
 	}
 
 	private void updateHiddenItemPatterns()
@@ -232,23 +197,6 @@ public class GroundItemEntityHiderPlugin extends Plugin
 		return matchesHiddenItemName(itemName, hiddenItemPatterns);
 	}
 
-	private boolean isGroundItemOption(MenuAction menuAction)
-	{
-		switch (menuAction)
-		{
-			case WIDGET_TARGET_ON_GROUND_ITEM:
-			case GROUND_ITEM_FIRST_OPTION:
-			case GROUND_ITEM_SECOND_OPTION:
-			case GROUND_ITEM_THIRD_OPTION:
-			case GROUND_ITEM_FOURTH_OPTION:
-			case GROUND_ITEM_FIFTH_OPTION:
-			case EXAMINE_ITEM_GROUND:
-				return true;
-			default:
-				return false;
-		}
-	}
-
 	private void hideConfiguredItems()
 	{
 		if (client == null || client.getTopLevelWorldView() == null)
@@ -277,7 +225,10 @@ public class GroundItemEntityHiderPlugin extends Plugin
 					List<TileItem> groundItems = tile.getGroundItems();
 					if (groundItems != null)
 					{
-						groundItems.removeIf(item -> shouldHideItem(item.getId()));
+						for (TileItem item : groundItems)
+						{
+							shouldHideItem(item.getId());
+						}
 					}
 
 				}
