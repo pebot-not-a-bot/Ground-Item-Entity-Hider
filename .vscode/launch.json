@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug RuneLite Plugin",
+      "type": "java",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 5005,
+      "preLaunchTask": "RuneLite: start debug JVM",
+      "sourcePaths": [
+        "${workspaceFolder}/src/main/java",
+        "${workspaceFolder}/src/test/java"
+      ]
+    }
+  ]
+}
